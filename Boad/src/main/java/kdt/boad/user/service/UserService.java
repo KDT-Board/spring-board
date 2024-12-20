@@ -6,16 +6,18 @@ import kdt.boad.user.dto.UserJoinRes;
 import kdt.boad.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserJoinRes createUser(UserJoinReq userJoinReq) {
         User createUser = User.builder()
                 .id(userJoinReq.getId())
-                .password(userJoinReq.getPassword())
+                .password(passwordEncoder.encode(userJoinReq.getPassword()))
                 .nickname(userJoinReq.getNickname())
                 .build();
 
