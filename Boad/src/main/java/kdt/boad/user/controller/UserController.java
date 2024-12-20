@@ -30,10 +30,18 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        if (!userJoinReq.getPassword().equals(userJoinReq.getRePassword()))
+        if (!userJoinReq.getPassword().equals(userJoinReq.getRePassword())) {
+            log.info("Error : 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
-        else if (userRepository.existsById(userJoinReq.getId()))
+        }
+        else if (userRepository.existsById(userJoinReq.getId())) {
+            log.info("Error : 이미 존재하는 아이디입니다.");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
+        else if (userRepository.existsByNickname(userJoinReq.getNickname())){
+            log.info("Error : 이미 존재하는 닉네임입니다.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userJoinReq));
     }
