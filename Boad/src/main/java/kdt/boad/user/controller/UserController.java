@@ -1,5 +1,6 @@
 package kdt.boad.user.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import kdt.boad.user.domain.User;
 import kdt.boad.user.dto.UserJoinReq;
@@ -12,12 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
@@ -64,6 +63,20 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(userService.loginUser(loginUser));
+        UserLoginRes userLoginRes = userService.loginUser(loginUser);
+        if (userLoginRes == null)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(userLoginRes);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> userLogout(Authentication authentication, HttpServletRequest request) {
+        // AccessToken 정보를 가져오기 위해 인자로 HttpServletRequest를 받아옴
+        if (authentication == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자입니다.");
+
+        if (!userService.logoutUser(userRepository.findById(authentication.getName()), request))
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그아웃에 실패했습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("로그아웃에 성공했습니다.");
     }
 }
