@@ -1,8 +1,8 @@
 package kdt.boad.user.service;
 
+import kdt.boad.jwt.JwtService;
 import kdt.boad.user.domain.User;
-import kdt.boad.user.dto.UserJoinReq;
-import kdt.boad.user.dto.UserJoinRes;
+import kdt.boad.user.dto.*;
 import kdt.boad.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public UserJoinRes createUser(UserJoinReq userJoinReq) {
         User createUser = User.builder()
@@ -24,5 +25,10 @@ public class UserService {
         userRepository.save(createUser);
 
         return new UserJoinRes(createUser);
+    }
+
+    public UserLoginRes loginUser(User loginUser) {
+        TokenDTO token = jwtService.createToken(loginUser);
+        return new UserLoginRes(loginUser, token);
     }
 }

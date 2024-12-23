@@ -37,7 +37,7 @@ public class SecurityConfig {
 
         // 메서드 권한 설정
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/user/join")
+                        .requestMatchers( "/user/join", "/user/login")
                         .permitAll()
                         .anyRequest().authenticated());
 
