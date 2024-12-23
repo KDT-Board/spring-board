@@ -7,10 +7,10 @@ import lombok.Getter;
 
 @Getter
 public class UserLoginRes {
-    private TokenDTO token;
-    private String id;
-    private String nickname;
-    private Grade grade;
+    private final TokenDTO token;
+    private final String id;
+    private final String nickname;
+    private final Grade grade;
 
     @Builder
     public UserLoginRes(User loginUser, TokenDTO tokenDTO) {
