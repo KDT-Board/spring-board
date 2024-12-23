@@ -1,10 +1,16 @@
 package kdt.boad.user.dto;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
-@AllArgsConstructor
 @Getter
 public class TokenDTO {
-    private String accessToken;
+    private final String grantType;
+    private final String accessToken;
+
+    @Builder
+    public TokenDTO(String accessToken) {
+        this.grantType = "Bearer";
+        this.accessToken = accessToken;
+    }
 }
