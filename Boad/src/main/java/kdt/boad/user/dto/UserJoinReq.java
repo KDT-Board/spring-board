@@ -3,9 +3,11 @@ package kdt.boad.user.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class UserJoinReq {
     @NotBlank(message = "ID - 아이디를 입력해주세요.")
     @Pattern(regexp = "^(?=.*[a-z])[a-zA-Z0-9]*$", message = "ID - 패턴에 맞게 입력해주세요.")
