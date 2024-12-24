@@ -51,8 +51,8 @@ class UserRepositoryTest {
     }
 
     @Test
-    @DisplayName("저장된 사용자 닉네임 존재 여부 확인 - 존재하는 사용자 : True")
-    void existsByNickname_return_true() {
+    @DisplayName("저장된 사용자 닉네임 존재 여부 확인 - 존재하는 사용자")
+    void existsByNickname_exist_user() {
         // Given
         User saveUser = User.builder()
                 .id("testUser1")
@@ -69,8 +69,8 @@ class UserRepositoryTest {
     }
 
     @Test
-    @DisplayName("저장된 사용자 닉네임 존재 여부 확인 - 존재하지 않는 사용자 : False")
-    void existsByNickname_return_false() {
+    @DisplayName("저장된 사용자 닉네임 존재 여부 확인 - 존재하지 않는 사용자")
+    void existsByNickname_non_exist_user() {
         // Given
         User saveUser = User.builder()
                 .id("testUser1")
@@ -87,7 +87,7 @@ class UserRepositoryTest {
     }
 
     @Test
-    @DisplayName("id를 통한 사용자 조회 - 존재하지 않는 사용자 : True")
+    @DisplayName("id를 통한 사용자 조회 - 존재하지 않는 사용자")
     void findById_non_exist_user() {
         // Given
         User saveUser = User.builder()
@@ -105,7 +105,7 @@ class UserRepositoryTest {
     }
 
     @Test
-    @DisplayName("id를 통한 사용자 조회 - 존재하는 사용자 : True")
+    @DisplayName("id를 통한 사용자 조회 - 존재하는 사용자")
     void findById_exist_user() {
         // Given
         User saveUser = User.builder()
