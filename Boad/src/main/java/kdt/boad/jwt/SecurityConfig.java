@@ -40,9 +40,19 @@ public class SecurityConfig {
 
         // 메서드 권한 설정
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/user/join", "/user/login")
+                        .requestMatchers( "/user/join", "/user/login", "/view/user/**")
                         .permitAll()
                         .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/view/user/login")
+                        .defaultSuccessUrl("/view/user/main", true)
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/view/user/logout")
+                        .logoutSuccessUrl("/view/user/main")
+                        .permitAll()
+                )
                 .addFilterBefore(new AuthFilter(jwtService, userRepository), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

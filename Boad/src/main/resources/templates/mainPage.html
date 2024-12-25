@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Basic Board - 메인</title>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="/view/user/join" th:href="@{/view/user/join}">회원가입</a>
+        <a href="/view/user/login" th:href="@{/view/user/login}" th:if="${notLoggedIn}">로그인</a>
+        <a href="/view/user/logout" th:href="@{/view/user/logout}" th:if="${loggedIn}">로그아웃</a>
+    </nav>
+</header>
+<main>
+    <section>
+        <h2>게시판 설명</h2>
+        <ul>
+            <li>회원가입을 하면 BRONZE 등급입니다.</li>
+            <li>가입인사를 남기면 SILVER 등급으로 승급합니다.</li>
+            <li>SILVER 등급 이상부터 자유게시판에 글 작성이 가능합니다.</li>
+            <li>자신의 모든 글에 좋아요가 총 10개 이상 달리면 GOLD 등급으로 승급합니다.(자신의 좋아요 제외)</li>
+            <li>GOLD 등급의 유저만 골드 게시판에 입장할 수 있습니다.</li>
+            <li>마이페이지에 GOLD 등급으로 출력되지만 골드 게시판에 입장할 수 없다면 다시 로그인해주세요.</li>
+            <li>타인에게 불쾌감을 주는 글 작성 시 BLACKLIST가 될 수 있습니다.</li>
+            <li>BLACKLIST는 글, 댓글 작성이 불가능합니다.</li>
+            <li>관리자는 모든 글, 댓글 작성이 불가능합니다.</li>
+            <li>마이페이지에서는 내 정보 확인, 수정이 가능합니다.</li>
+            <li>마이페이지에서는 내가 작성한 글, 좋아요 누른 글, 댓글 단 글을 확인할 수 있습니다.</li>
+        </ul>
+    </section>
+    <aside>
+        <h3>전체 유저 정보</h3>
+        <ul>
+            <li>전체 유저: <span th:text="${userCount}">0</span></li>
+            <li>관리자: <span th:text="${adminCount}">0</span></li>
+            <li>BRONZE 유저: <span th:text="${bronzeCount}">0</span></li>
+            <li>SILVER 유저: <span th:text="${silverCount}">0</span></li>
+            <li>GOLD 유저: <span th:text="${goldCount}">0</span></li>
+            <li>BLACKLIST 유저: <span th:text="${blacklistCount}">0</span></li>
+        </ul>
+<!--        <h3>전체 게시판 정보</h3>-->
+<!--        <ul>-->
+<!--            <li>전체 글: <span th:text="${postCount}">0</span></li>-->
+<!--            <li>공지: <span th:text="${postCount}">0</span></li>-->
+<!--            <li>가입 인사: <span th:text="${postCount}">0</span></li>-->
+<!--            <li>자유 게시판 게시물: <span th:text="${freeBoardCount}">0</span></li>-->
+<!--            <li>골드 게시판 게시물: <span th:text="${goldBoardCount}">0</span></li>-->
+<!--        </ul>-->
+    </aside>
+</main>
+</body>
+</html>
