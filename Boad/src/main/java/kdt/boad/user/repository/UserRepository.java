@@ -8,6 +8,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsById(String id);
     boolean existsByNickname(String nickname);
     User findById(String id);
+    User findByNickname(String nickname);
     long count();
     Long countByGrade(Grade grade);
 }
