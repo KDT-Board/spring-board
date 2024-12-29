@@ -1,12 +1,12 @@
 package kdt.boad.user.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import kdt.boad.user.domain.User;
 import kdt.boad.user.dto.*;
 import kdt.boad.user.repository.UserRepository;
 import kdt.boad.user.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -39,6 +39,12 @@ class UserControllerTest {
     UserRepository userRepository;
     @MockitoBean
     PasswordEncoder passwordEncoder;
+
+
+    @BeforeEach
+    void setup() {
+        userRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("회원가입 - 유효성 검사 : id size")
@@ -250,6 +256,7 @@ class UserControllerTest {
 
         when(mockAuth.getName()).thenReturn(mockUser.getId());
         when(userRepository.findById(mockUser.getId())).thenReturn(mockUser);
+        when(userService.validUser(mockAuth)).thenReturn(mockUser);
         when(userService.logoutUser(mockUser, null)).thenReturn(false);
 
         // When & Then
@@ -270,6 +277,7 @@ class UserControllerTest {
 
         when(mockAuth.getName()).thenReturn(mockUser.getId());
         when(userRepository.findById(mockUser.getId())).thenReturn(mockUser);
+        when(userService.validUser(mockAuth)).thenReturn(mockUser);
         when(userService.logoutUser(eq(mockUser), any(HttpServletRequest.class))).thenReturn(true);
 
         // When & Then
@@ -296,6 +304,7 @@ class UserControllerTest {
 
         when(mockAuth.getName()).thenReturn(mockUser.getId());
         when(userRepository.findById(mockAuth.getName())).thenReturn(mockUser);
+        when(userService.validUser(mockAuth)).thenReturn(mockUser);
         when(userService.getUserInfo(mockUser)).thenReturn(userInfoDTO);
 
         // When & Then
@@ -331,6 +340,7 @@ class UserControllerTest {
 
         when(userRepository.findByNickname(mockUpdateReq.getNickname())).thenReturn(overlapUser);
         when(userRepository.findById(updateUser.getId())).thenReturn(updateUser);
+        when(userService.validUser(mockAuth)).thenReturn(updateUser);
 
         // When  & Then
         mockMvc.perform(patch("/user/info").principal(mockAuth)
@@ -358,6 +368,7 @@ class UserControllerTest {
         when(userRepository.findByNickname(mockUpdateReq.getNickname())).thenReturn(updateUser);
         when(userRepository.findById(mockAuth.getName())).thenReturn(updateUser);
         when(userService.updateUserInfo(userRepository.findById(mockAuth.getName()), mockUpdateReq)).thenReturn(new UpdateUserInfoRes("updatePw1!", "testUser2"));
+        when(userService.validUser(mockAuth)).thenReturn(updateUser);
 
         // When & Then
         mockMvc.perform(patch("/user/info").principal(mockAuth)
@@ -366,5 +377,30 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.password").value("updatePw1!"))
                 .andExpect(jsonPath("$.nickname").value("testUser2"));
+    }
+
+    @Test
+    @DisplayName("사용자 삭제 - 성공")
+    void deleteUser() throws Exception {
+        // Given
+        Authentication mockAuth = Mockito.mock(Authentication.class);
+
+        User mockUser = User.builder()
+                .id("testUser1")
+                .password("testUser1!")
+                .nickname("testUser1")
+                .build();
+        userRepository.save(mockUser);
+
+        when(mockAuth.getName()).thenReturn("testUser1");
+        when(userRepository.findById(mockAuth.getName())).thenReturn(mockUser);
+        when(userService.validUser(mockAuth)).thenReturn(mockUser);
+        when(userService.deleteUser(mockUser)).thenReturn(mockUser.getId() + "님의 회원 정보를 삭제했습니다.\n");
+
+        // When & Then
+        mockMvc.perform(delete("/user").principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(mockUser.getId() + "님의 회원 정보를 삭제했습니다.\n"));
     }
 }
