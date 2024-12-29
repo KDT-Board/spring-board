@@ -3,10 +3,7 @@ package kdt.boad.user.service;
 import jakarta.servlet.http.HttpServletRequest;
 import kdt.boad.jwt.JwtService;
 import kdt.boad.user.domain.User;
-import kdt.boad.user.dto.TokenDTO;
-import kdt.boad.user.dto.UserJoinReq;
-import kdt.boad.user.dto.UserJoinRes;
-import kdt.boad.user.dto.UserLoginRes;
+import kdt.boad.user.dto.*;
 import kdt.boad.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -108,5 +105,26 @@ class UserServiceTest {
         // Then
         assertTrue(testLogoutUser);
         verify(jwtService).blacklistToken(mockUser, mockRequest);
+    }
+
+    @Test
+    @DisplayName("사용자 정보 검증")
+    void getUserInfo() {
+        // Given
+        User mockUser = User.builder()
+                .id("testUser1")
+                .password("testUser1!")
+                .nickname("testUser1")
+                .build();
+
+        UserInfoDTO mockUserInfo = UserInfoDTO.builder()
+                .user(mockUser)
+                .build();
+
+        // When
+        UserInfoDTO testUserInfo = userService.getUserInfo(mockUser);
+
+        // Then
+        assertThat(testUserInfo).isEqualTo(mockUserInfo);
     }
 }
