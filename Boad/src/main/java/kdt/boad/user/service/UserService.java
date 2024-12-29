@@ -6,6 +6,7 @@ import kdt.boad.user.domain.User;
 import kdt.boad.user.dto.*;
 import kdt.boad.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+
+    public User validUser(Authentication authentication) {
+        if (authentication == null)
+            return null;
+
+        return userRepository.findById(authentication.getName());
+    }
 
     @Transactional
     public UserJoinRes createUser(UserJoinReq userJoinReq) {
@@ -57,5 +65,12 @@ public class UserService {
         userRepository.save(user);
 
         return new UpdateUserInfoRes(user.getPassword(), user.getNickname());
+    }
+
+    @Transactional
+    public String deleteUser(User user) {
+        userRepository.delete(user);
+
+        return user.getId() + "님의 회원 정보를 삭제했습니다.\n";
     }
 }
