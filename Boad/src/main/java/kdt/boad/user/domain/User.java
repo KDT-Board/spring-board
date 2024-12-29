@@ -1,14 +1,12 @@
 package kdt.boad.user.domain;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "`user`")
 @Getter
+@Setter
 @NoArgsConstructor
 @EqualsAndHashCode
 public class User {
