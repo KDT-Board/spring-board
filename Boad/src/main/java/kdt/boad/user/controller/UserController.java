@@ -3,10 +3,7 @@ package kdt.boad.user.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import kdt.boad.user.domain.User;
-import kdt.boad.user.dto.UserJoinReq;
-import kdt.boad.user.dto.UserJoinRes;
-import kdt.boad.user.dto.UserLoginReq;
-import kdt.boad.user.dto.UserLoginRes;
+import kdt.boad.user.dto.*;
 import kdt.boad.user.repository.UserRepository;
 import kdt.boad.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -78,5 +75,13 @@ public class UserController {
         if (!userService.logoutUser(userRepository.findById(authentication.getName()), request))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그아웃에 실패했습니다.");
         return ResponseEntity.status(HttpStatus.OK).body("로그아웃에 성공했습니다.");
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<UserInfoDTO> userInfo(Authentication authentication) {
+        if (authentication == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getUserInfo(userRepository.findById(authentication.getName())));
     }
 }
