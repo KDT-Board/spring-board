@@ -40,11 +40,11 @@ public class AuthFilter extends GenericFilterBean {
             }
         }
         catch (ExpiredJwtException e) {
-            // RefreshToken 유효성 검사
-            if (jwtService.validateRefreshToken(accessToken)) {
-                // 액세스 토큰이 만료된 경우 리프레쉬 토큰을 통해 액세스 토큰 재발급을 시도한다.
-                String id = e.getClaims().getSubject();
+            String id = e.getClaims().getSubject();
 
+            // RefreshToken 유효성 검사
+            if (jwtService.validateRefreshToken(id, accessToken)) {
+                // 액세스 토큰이 만료된 경우 리프레쉬 토큰을 통해 액세스 토큰 재발급을 시도한다.
                 String newAccessToken = jwtService.createAccessToken(userRepository.findById(id));
                 String newRefreshToken = jwtService.createRefreshToken(newAccessToken);
 
