@@ -1,12 +1,10 @@
 package kdt.boad.user.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import kdt.boad.user.domain.User;
-import kdt.boad.user.dto.UserJoinReq;
-import kdt.boad.user.dto.UserJoinRes;
-import kdt.boad.user.dto.UserLoginReq;
-import kdt.boad.user.dto.UserLoginRes;
+import kdt.boad.user.dto.*;
 import kdt.boad.user.repository.UserRepository;
 import kdt.boad.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -275,5 +274,33 @@ class UserControllerTest {
         mockMvc.perform(post("/user/logout").principal(mockAuth))
                 .andExpect(status().isOk())
                 .andExpect(content().string("로그아웃에 성공했습니다."));
+    }
+
+
+    @Test
+    @DisplayName("로그아웃 - 성공")
+    void userInfo() throws Exception {
+        // When
+        Authentication mockAuth = Mockito.mock(Authentication.class);
+        User mockUser = User.builder()
+                .id("testUser1")
+                .password("testUser1!")
+                .nickname("testUser1")
+                .build();
+        UserInfoDTO userInfoDTO = UserInfoDTO.builder()
+                .user(mockUser)
+                .build();
+        String mockGrade = "BRONZE";
+
+        when(mockAuth.getName()).thenReturn(mockUser.getId());
+        when(userRepository.findById(mockAuth.getName())).thenReturn(mockUser);
+        when(userService.getUserInfo(mockUser)).thenReturn(userInfoDTO);
+
+        // When & Then
+        mockMvc.perform(get("/user/info").principal(mockAuth))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(mockUser.getId()))
+                .andExpect(jsonPath("$.nickname").value(mockUser.getNickname()))
+                .andExpect(jsonPath("$.grade").value(mockGrade));
     }
 }
