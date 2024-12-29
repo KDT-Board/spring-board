@@ -5,6 +5,7 @@ import kdt.boad.jwt.JwtService;
 import kdt.boad.user.domain.User;
 import kdt.boad.user.dto.*;
 import kdt.boad.user.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,6 +32,12 @@ class UserServiceTest {
     private UserService userService;
     @Mock
     private JwtService jwtService;
+
+
+    @BeforeEach
+    void setup() {
+        userRepository.deleteAll(); // 데이터 초기화
+    }
 
     @Test
     @DisplayName("사용자 정보 생성 - UserJoinRes 검증")
@@ -126,5 +134,36 @@ class UserServiceTest {
 
         // Then
         assertThat(testUserInfo).isEqualTo(mockUserInfo);
+    }
+
+    @Transactional
+    @Test
+    @DisplayName("사용자 정보 업데이트 검증")
+    void updateUserInfo() {
+        // Given
+        User mockUser = User.builder()
+                .id("testUser1")
+                .password("testUser1!")
+                .nickname("testUser1")
+                .build();
+        userRepository.save(mockUser);
+
+        UpdateUserInfoReq mockUserInfoReq = new UpdateUserInfoReq("updateUser1!", "updateUser1!", "updateUser1");
+        when(passwordEncoder.encode("updateUser1!")).thenReturn("encodedPw");
+
+        // When
+        UpdateUserInfoRes userInfoRes = userService.updateUserInfo(mockUser, mockUserInfoReq);
+
+        // Then
+        User updateUser = userRepository.findById(mockUser.getId());
+        assertThat(updateUser.getNickname())
+                .as("Nickname이 updateUser1이어야 합니다.")
+                .isEqualTo("updateUser1");
+        assertThat(updateUser.getPassword())
+                .as("Password가 encodedPw여야 합니다.")
+                .isEqualTo("encodedPw");
+        assertThat(userInfoRes)
+                .as("Nickname ; updateUser1, PW : encodedPw여야 합니다.")
+                .isEqualTo(new UpdateUserInfoRes("encodedPw", "updateUser1"));
     }
 }
