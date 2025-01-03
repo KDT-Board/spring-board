@@ -140,13 +140,22 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserInfo(userRepository.findById(authentication.getName()), userInfoReq));
     }
 
-    @DeleteMapping("")
-    public ResponseEntity<String> deleteUser(Authentication authentication) {
+    @DeleteMapping("/{number}")
+    public ResponseEntity<String> deleteUser(Authentication authentication, HttpServletResponse response) {
         User deleteUser = userService.validUser(authentication);
         if (deleteUser == null) {
             log.info("Error : 유효하지 않은 사용자입니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
+
+        // 쿠키 삭제
+        ResponseCookie deleteCookie = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)  // 즉시 만료
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
 
         return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUser(userRepository.findById(authentication.getName())));
     }
