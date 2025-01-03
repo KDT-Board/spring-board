@@ -6,9 +6,13 @@
 </head>
 <body>
 <header>
-    <nav>
-        <a href="/view/user/join" th:href="@{/view/user/join}">회원가입</a>
-        <a href="/view/user/login" th:href="@{/view/user/login}">로그인</a>
+    <nav style="background-color: green; padding: 10px;">
+        <a href="/" th:href="@{/}" style="margin-right: 10px; color: black; text-decoration: none;">Home</a>
+        <a href="/view/user/join" th:href="@{/view/user/join}" style="margin-right: 10px; color: black; text-decoration: none;">가입인사</a>
+        <a href="/view/board/free" th:href="@{/view/board/free}" style="margin-right: 10px; color: black; text-decoration: none;">자유게시판</a>
+        <a href="/view/board/gold" th:href="@{/view/board/gold}" style="margin-right: 10px; color: black; text-decoration: none;">골드게시판</a>
+        <a href="/view/user/join" th:href="@{/view/user/join}" style="margin-right: 10px; color: black; text-decoration: none;">회원가입</a>
+        <a href="/view/user/login" th:href="@{/view/user/login}" style="margin-right: 10px; color: black; text-decoration: none;">로그인</a>
     </nav>
 </header>
 <main>
