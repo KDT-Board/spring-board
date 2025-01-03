@@ -3,10 +3,7 @@ package kdt.boad.user.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import kdt.boad.user.domain.User;
-import kdt.boad.user.dto.UserJoinReq;
-import kdt.boad.user.dto.UserJoinRes;
-import kdt.boad.user.dto.UserLoginReq;
-import kdt.boad.user.dto.UserLoginRes;
+import kdt.boad.user.dto.*;
 import kdt.boad.user.repository.UserRepository;
 import kdt.boad.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -71,12 +68,63 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> userLogout(Authentication authentication, HttpServletRequest request) {
-        // AccessToken 정보를 가져오기 위해 인자로 HttpServletRequest를 받아옴
-        if (authentication == null)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자입니다.");
+        User deleteUser = userService.validUser(authentication);
+        if (deleteUser == null) {
+            log.info("Error : 유효하지 않은 사용자입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
 
         if (!userService.logoutUser(userRepository.findById(authentication.getName()), request))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그아웃에 실패했습니다.");
         return ResponseEntity.status(HttpStatus.OK).body("로그아웃에 성공했습니다.");
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<UserInfoDTO> userInfo(Authentication authentication) {
+        User deleteUser = userService.validUser(authentication);
+        if (deleteUser == null) {
+            log.info("Error : 유효하지 않은 사용자입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getUserInfo(userRepository.findById(authentication.getName())));
+    }
+
+    @PatchMapping("/info")
+    public ResponseEntity<UpdateUserInfoRes> updateUserInfo(Authentication authentication, @RequestBody @Valid UpdateUserInfoReq userInfoReq, BindingResult bindingResult) {
+        User deleteUser = userService.validUser(authentication);
+        if (deleteUser == null) {
+            log.info("Error : 유효하지 않은 사용자입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        if (bindingResult.hasErrors()) {
+            log.info("유효성 검사 에러 : {}", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+
+        User updateUser = userRepository.findByNickname(userInfoReq.getNickname());
+        if (updateUser != null && !updateUser.equals(userRepository.findById(authentication.getName()))) {
+            log.info("Error : 이미 존재하는 닉네임입니다.\n");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
+
+        if (!userInfoReq.getPassword().equals(userInfoReq.getRePassword())) {
+            log.info("Error : 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserInfo(userRepository.findById(authentication.getName()), userInfoReq));
+    }
+
+    @DeleteMapping("")
+    public ResponseEntity<String> deleteUser(Authentication authentication) {
+        User deleteUser = userService.validUser(authentication);
+        if (deleteUser == null) {
+            log.info("Error : 유효하지 않은 사용자입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUser(userRepository.findById(authentication.getName())));
     }
 }

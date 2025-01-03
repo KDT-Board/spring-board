@@ -3,12 +3,10 @@ package kdt.boad.user.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import kdt.boad.user.domain.User;
-import kdt.boad.user.dto.UserJoinReq;
-import kdt.boad.user.dto.UserJoinRes;
-import kdt.boad.user.dto.UserLoginReq;
-import kdt.boad.user.dto.UserLoginRes;
+import kdt.boad.user.dto.*;
 import kdt.boad.user.repository.UserRepository;
 import kdt.boad.user.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,9 +19,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -38,6 +39,12 @@ class UserControllerTest {
     UserRepository userRepository;
     @MockitoBean
     PasswordEncoder passwordEncoder;
+
+
+    @BeforeEach
+    void setup() {
+        userRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("회원가입 - 유효성 검사 : id size")
@@ -249,6 +256,7 @@ class UserControllerTest {
 
         when(mockAuth.getName()).thenReturn(mockUser.getId());
         when(userRepository.findById(mockUser.getId())).thenReturn(mockUser);
+        when(userService.validUser(mockAuth)).thenReturn(mockUser);
         when(userService.logoutUser(mockUser, null)).thenReturn(false);
 
         // When & Then
@@ -269,11 +277,130 @@ class UserControllerTest {
 
         when(mockAuth.getName()).thenReturn(mockUser.getId());
         when(userRepository.findById(mockUser.getId())).thenReturn(mockUser);
+        when(userService.validUser(mockAuth)).thenReturn(mockUser);
         when(userService.logoutUser(eq(mockUser), any(HttpServletRequest.class))).thenReturn(true);
 
         // When & Then
         mockMvc.perform(post("/user/logout").principal(mockAuth))
                 .andExpect(status().isOk())
                 .andExpect(content().string("로그아웃에 성공했습니다."));
+    }
+
+
+    @Test
+    @DisplayName("사용자 정보 - 성공")
+    void userInfo() throws Exception {
+        // When
+        Authentication mockAuth = Mockito.mock(Authentication.class);
+        User mockUser = User.builder()
+                .id("testUser1")
+                .password("testUser1!")
+                .nickname("testUser1")
+                .build();
+        UserInfoDTO userInfoDTO = UserInfoDTO.builder()
+                .user(mockUser)
+                .build();
+        String mockGrade = "BRONZE";
+
+        when(mockAuth.getName()).thenReturn(mockUser.getId());
+        when(userRepository.findById(mockAuth.getName())).thenReturn(mockUser);
+        when(userService.validUser(mockAuth)).thenReturn(mockUser);
+        when(userService.getUserInfo(mockUser)).thenReturn(userInfoDTO);
+
+        // When & Then
+        mockMvc.perform(get("/user/info").principal(mockAuth))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(mockUser.getId()))
+                .andExpect(jsonPath("$.nickname").value(mockUser.getNickname()))
+                .andExpect(jsonPath("$.grade").value(mockGrade));
+    }
+
+    @Test
+    @DisplayName("사용자 정보 업데이트 - overlap nickname")
+    void updateUserInfo_overlap_nickname() throws Exception {
+        // Given
+        Authentication mockAuth = Mockito.mock(Authentication.class);
+
+        List<User> mockUserList = new ArrayList<>();
+        User overlapUser = User.builder()
+                .id("testUser1")
+                .nickname("testUser1")
+                .password("testUser1!")
+                .build();
+        User updateUser = User.builder()
+                .id("testUser2")
+                .nickname("testUser2")
+                .password("testUser2!")
+                .build();
+        mockUserList.add(overlapUser);
+        mockUserList.add(updateUser);
+        userRepository.saveAll(mockUserList);
+
+        UpdateUserInfoReq mockUpdateReq = new UpdateUserInfoReq("updatePw1!", "updatePw1!", "testUser1");
+
+        when(userRepository.findByNickname(mockUpdateReq.getNickname())).thenReturn(overlapUser);
+        when(userRepository.findById(updateUser.getId())).thenReturn(updateUser);
+        when(userService.validUser(mockAuth)).thenReturn(updateUser);
+
+        // When  & Then
+        mockMvc.perform(patch("/user/info").principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(mockUpdateReq)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @DisplayName("사용자 정보 업데이트 - 성공")
+    void updateUserInfo() throws Exception {
+        // Given
+        Authentication mockAuth = Mockito.mock(Authentication.class);
+
+        User updateUser = User.builder()
+                .id("testUser2")
+                .nickname("testUser2")
+                .password("testUser2!")
+                .build();
+        userRepository.save(updateUser);
+
+        UpdateUserInfoReq mockUpdateReq = new UpdateUserInfoReq("updatePw1!", "updatePw1!", "testUser2");
+
+        when(mockAuth.getName()).thenReturn("testUser2");
+        when(userRepository.findByNickname(mockUpdateReq.getNickname())).thenReturn(updateUser);
+        when(userRepository.findById(mockAuth.getName())).thenReturn(updateUser);
+        when(userService.updateUserInfo(userRepository.findById(mockAuth.getName()), mockUpdateReq)).thenReturn(new UpdateUserInfoRes("updatePw1!", "testUser2"));
+        when(userService.validUser(mockAuth)).thenReturn(updateUser);
+
+        // When & Then
+        mockMvc.perform(patch("/user/info").principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(mockUpdateReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.password").value("updatePw1!"))
+                .andExpect(jsonPath("$.nickname").value("testUser2"));
+    }
+
+    @Test
+    @DisplayName("사용자 삭제 - 성공")
+    void deleteUser() throws Exception {
+        // Given
+        Authentication mockAuth = Mockito.mock(Authentication.class);
+
+        User mockUser = User.builder()
+                .id("testUser1")
+                .password("testUser1!")
+                .nickname("testUser1")
+                .build();
+        userRepository.save(mockUser);
+
+        when(mockAuth.getName()).thenReturn("testUser1");
+        when(userRepository.findById(mockAuth.getName())).thenReturn(mockUser);
+        when(userService.validUser(mockAuth)).thenReturn(mockUser);
+        when(userService.deleteUser(mockUser)).thenReturn(mockUser.getId() + "님의 회원 정보를 삭제했습니다.\n");
+
+        // When & Then
+        mockMvc.perform(delete("/user").principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(mockUser.getId() + "님의 회원 정보를 삭제했습니다.\n"));
     }
 }
