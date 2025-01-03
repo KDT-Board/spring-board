@@ -164,11 +164,15 @@ public class JwtService {
     }
 
     // 유효한 RefreshToken인지 검증
-    public boolean validateRefreshToken(String accessToken) {
-        String logoutRefreshToken = redisTemplate.opsForValue().get(PREFIX_LOGOUT_REFRESH + accessToken);
+    public boolean validateRefreshToken(String id, String accessToken) {
+        String logoutAccessToken = redisTemplate.opsForValue().get(PREFIX_LOGOUT_ACCESS + id);
+
+        if (logoutAccessToken.equals(accessToken))
+            return false;
+
         String refreshToken = redisTemplate.opsForValue().get(PREFIX_REFRESH + accessToken);
 
-        return !logoutRefreshToken.equals(refreshToken);
+        return !refreshToken.isEmpty();
     }
 
     // 유저 인증 정보 추출
