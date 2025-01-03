@@ -2,12 +2,14 @@ package kdt.boad.user.controller;
 
 import kdt.boad.jwt.JwtService;
 import kdt.boad.user.domain.Grade;
+import kdt.boad.user.domain.User;
 import kdt.boad.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -30,6 +32,57 @@ public class UserViewController {
     @GetMapping("/logout")
     public String logoutPage() {
         return "logoutPage";
+    }
+
+    @GetMapping("/info")
+    public String myPage(@CookieValue(value = "accessToken", required = false) String accessToken, Model model) {
+        model.addAttribute("user", null);
+
+        // accessToken 확인 및 사용자 정보 로드
+        if (accessToken != null && jwtService.validateAccessToken(accessToken)) {
+            User user = userRepository.findById(jwtService.getIdFromAccessToken(accessToken));
+
+            if (user != null) {
+                model.addAttribute("user", user);
+            }
+        }
+
+        return "myPage"; // myPage.html 렌더링
+    }
+
+    @GetMapping("/info/{number}")
+    public String updateMyPage(@CookieValue(value = "accessToken", required = false) String accessToken, Model model, @PathVariable String number) {
+        model.addAttribute("user", null);
+
+        // accessToken 확인 및 사용자 정보 로드
+        if (accessToken != null && jwtService.validateAccessToken(accessToken)) {
+            User user = userRepository.findById(jwtService.getIdFromAccessToken(accessToken));
+
+            if (user != null) {
+                model.addAttribute("user", user);
+                model.addAttribute("number", number);
+            }
+        }
+
+        return "updateMyPage";
+    }
+
+
+    @GetMapping("/delete/{number}")
+    public String deleteUser(@CookieValue(value = "accessToken", required = false) String accessToken, Model model, @PathVariable String number) {
+        model.addAttribute("user", null);
+
+        // accessToken 확인 및 사용자 정보 로드
+        if (accessToken != null && jwtService.validateAccessToken(accessToken)) {
+            User user = userRepository.findById(jwtService.getIdFromAccessToken(accessToken));
+
+            if (user != null) {
+                model.addAttribute("user", user);
+                model.addAttribute("number", number);
+            }
+        }
+
+        return "deleteUserPage";
     }
 
     @GetMapping("/main")
