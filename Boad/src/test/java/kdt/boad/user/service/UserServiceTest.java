@@ -166,4 +166,28 @@ class UserServiceTest {
                 .as("Nickname ; updateUser1, PW : encodedPw여야 합니다.")
                 .isEqualTo(new UpdateUserInfoRes("encodedPw", "updateUser1"));
     }
+
+    @Transactional
+    @Test
+    @DisplayName("사용자 삭제 검증")
+    void deleteUser() {
+        // Given
+        User mockUser = User.builder()
+                .id("testUser1")
+                .password("testUser1!")
+                .nickname("testUser1")
+                .build();
+        userRepository.save(mockUser);
+
+        // When
+        String msg = userService.deleteUser(mockUser);
+
+        // Then
+        assertThat(msg)
+                .as("응답 메시지가 올바르지 않습니다.")
+                .isEqualTo(mockUser.getId() + "님의 회원 정보를 삭제했습니다.\n");
+        assertThat(userRepository.findById("testUser1"))
+                .as("사용자 정보가 삭제되지 않았습니다.")
+                .isEqualTo(null);
+    }
 }

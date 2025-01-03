@@ -68,9 +68,11 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> userLogout(Authentication authentication, HttpServletRequest request) {
-        // AccessToken 정보를 가져오기 위해 인자로 HttpServletRequest를 받아옴
-        if (authentication == null)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자입니다.");
+        User deleteUser = userService.validUser(authentication);
+        if (deleteUser == null) {
+            log.info("Error : 유효하지 않은 사용자입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
 
         if (!userService.logoutUser(userRepository.findById(authentication.getName()), request))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그아웃에 실패했습니다.");
@@ -79,7 +81,8 @@ public class UserController {
 
     @GetMapping("/info")
     public ResponseEntity<UserInfoDTO> userInfo(Authentication authentication) {
-        if (authentication == null) {
+        User deleteUser = userService.validUser(authentication);
+        if (deleteUser == null) {
             log.info("Error : 유효하지 않은 사용자입니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -89,7 +92,8 @@ public class UserController {
 
     @PatchMapping("/info")
     public ResponseEntity<UpdateUserInfoRes> updateUserInfo(Authentication authentication, @RequestBody @Valid UpdateUserInfoReq userInfoReq, BindingResult bindingResult) {
-        if (authentication == null) {
+        User deleteUser = userService.validUser(authentication);
+        if (deleteUser == null) {
             log.info("Error : 유효하지 않은 사용자입니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -111,5 +115,16 @@ public class UserController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserInfo(userRepository.findById(authentication.getName()), userInfoReq));
+    }
+
+    @DeleteMapping("")
+    public ResponseEntity<String> deleteUser(Authentication authentication) {
+        User deleteUser = userService.validUser(authentication);
+        if (deleteUser == null) {
+            log.info("Error : 유효하지 않은 사용자입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUser(userRepository.findById(authentication.getName())));
     }
 }
