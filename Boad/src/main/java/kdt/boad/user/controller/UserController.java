@@ -1,6 +1,7 @@
 package kdt.boad.user.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import kdt.boad.user.domain.User;
 import kdt.boad.user.dto.*;
@@ -8,7 +9,9 @@ import kdt.boad.user.repository.UserRepository;
 import kdt.boad.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,7 +51,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserLoginRes> userLogin(@RequestBody UserLoginReq userLoginReq) {
+    public ResponseEntity<UserLoginRes> userLogin(@RequestBody UserLoginReq userLoginReq, HttpServletResponse response) {
         if (!userRepository.existsById(userLoginReq.getId())) {
             log.info("Error : 존재하지 않는 아이디입니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
@@ -63,11 +66,21 @@ public class UserController {
         UserLoginRes userLoginRes = userService.loginUser(loginUser);
         if (userLoginRes == null)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+
+        // Header에 Cookie 추가
+        ResponseCookie cookie = ResponseCookie.from("accessToken", userLoginRes.getToken().getAccessToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(30 * 60)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
         return ResponseEntity.status(HttpStatus.OK).body(userLoginRes);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> userLogout(Authentication authentication, HttpServletRequest request) {
+    public ResponseEntity<String> userLogout(Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
         User deleteUser = userService.validUser(authentication);
         if (deleteUser == null) {
             log.info("Error : 유효하지 않은 사용자입니다.");
@@ -76,6 +89,16 @@ public class UserController {
 
         if (!userService.logoutUser(userRepository.findById(authentication.getName()), request))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그아웃에 실패했습니다.");
+
+        // 쿠키 삭제
+        ResponseCookie deleteCookie = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)  // 즉시 만료
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
+
         return ResponseEntity.status(HttpStatus.OK).body("로그아웃에 성공했습니다.");
     }
 

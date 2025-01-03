@@ -1,12 +1,12 @@
 package kdt.boad.user.controller;
 
+import kdt.boad.jwt.JwtService;
 import kdt.boad.user.domain.Grade;
 import kdt.boad.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 public class UserViewController {
     private final UserRepository userRepository;
+    private final JwtService jwtService;
 
     @GetMapping("/join")
     public String joinPage() {
@@ -26,19 +27,21 @@ public class UserViewController {
         return "loginPage"; // loginPage.html 렌더링
     }
 
+    @GetMapping("/logout")
+    public String logoutPage() {
+        return "logoutPage";
+    }
+
     @GetMapping("/main")
-    public String mainPage(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isLoggedIn = authentication != null && authentication.isAuthenticated()
-                && !"anonymousUser".equals(authentication.getName());
+    public String mainPage(@CookieValue(value = "accessToken", required = false) String accessToken, Model model) {
+        model.addAttribute("loggedIn", false);
+        model.addAttribute("notLoggedIn", true);
 
-        // 로그 출력
-        System.out.println("Authentication Name: " + authentication.getName());
-        System.out.println("Is Logged In: " + isLoggedIn);
-
-        // 로그인 여부
-        model.addAttribute("loggedIn", isLoggedIn);
-        model.addAttribute("notLoggedIn", !isLoggedIn);
+        if (accessToken != null && jwtService.validateAccessToken(accessToken)) {
+            // 로그인 여부
+            model.addAttribute("loggedIn", true);
+            model.addAttribute("notLoggedIn", false);
+        }
 
         // 사용자 데이터
         model.addAttribute("userCount", userRepository.count()); // 전체 사용자 수
