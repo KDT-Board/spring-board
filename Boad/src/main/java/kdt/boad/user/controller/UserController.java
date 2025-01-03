@@ -79,9 +79,37 @@ public class UserController {
 
     @GetMapping("/info")
     public ResponseEntity<UserInfoDTO> userInfo(Authentication authentication) {
-        if (authentication == null)
+        if (authentication == null) {
+            log.info("Error : 유효하지 않은 사용자입니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(userService.getUserInfo(userRepository.findById(authentication.getName())));
+    }
+
+    @PatchMapping("/info")
+    public ResponseEntity<UpdateUserInfoRes> updateUserInfo(Authentication authentication, @RequestBody @Valid UpdateUserInfoReq userInfoReq, BindingResult bindingResult) {
+        if (authentication == null) {
+            log.info("Error : 유효하지 않은 사용자입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        if (bindingResult.hasErrors()) {
+            log.info("유효성 검사 에러 : {}", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+
+        User updateUser = userRepository.findByNickname(userInfoReq.getNickname());
+        if (updateUser != null && !updateUser.equals(userRepository.findById(authentication.getName()))) {
+            log.info("Error : 이미 존재하는 닉네임입니다.\n");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
+
+        if (!userInfoReq.getPassword().equals(userInfoReq.getRePassword())) {
+            log.info("Error : 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserInfo(userRepository.findById(authentication.getName()), userInfoReq));
     }
 }

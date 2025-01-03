@@ -48,4 +48,14 @@ public class UserService {
                 .user(user)
                 .build();
     }
+
+    @Transactional
+    public UpdateUserInfoRes updateUserInfo(User user, UpdateUserInfoReq userInfoReq) {
+        user.setNickname(userInfoReq.getNickname());
+        user.setPassword(passwordEncoder.encode(userInfoReq.getPassword()));
+
+        userRepository.save(user);
+
+        return new UpdateUserInfoRes(user.getPassword(), user.getNickname());
+    }
 }
