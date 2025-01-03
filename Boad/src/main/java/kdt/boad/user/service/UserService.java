@@ -42,4 +42,10 @@ public class UserService {
     public boolean logoutUser(User logoutUser, HttpServletRequest request) {
         return jwtService.blacklistToken(logoutUser, request);
     }
+
+    public UserInfoDTO getUserInfo(User user) {
+        return UserInfoDTO.builder()
+                .user(user)
+                .build();
+    }
 }
