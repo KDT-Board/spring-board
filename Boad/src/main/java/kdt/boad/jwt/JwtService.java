@@ -188,4 +188,8 @@ public class JwtService {
 
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
+
+    public String getIdFromAccessToken(String accessToken) {
+        return parseClaims(accessToken).getSubject();
+    }
 }
