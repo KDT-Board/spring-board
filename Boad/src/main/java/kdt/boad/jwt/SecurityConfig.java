@@ -40,7 +40,8 @@ public class SecurityConfig {
 
         // 메서드 권한 설정
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/", "/user/join", "/user/login", "/view/user/**")
+                        .requestMatchers( "/", "/user/join", "/user/login", "/auth/kakao","/view/user/**", "/view/auth/**",
+                                "/kakao_login_medium_narrow.png")
                         .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new AuthFilter(jwtService, userRepository), UsernamePasswordAuthenticationFilter.class);
