@@ -15,10 +15,17 @@ public class UserLoginRes {
     private final Grade grade;
 
     @Builder
-    public UserLoginRes(User loginUser, TokenDTO tokenDTO) {
+    private UserLoginRes(User loginUser, TokenDTO tokenDTO) {
         this.token = tokenDTO;
         this.id = loginUser.getId();
         this.nickname = loginUser.getNickname();
         this.grade = loginUser.getGrade();
+    }
+
+    public static UserLoginRes from(User loginUser, TokenDTO token) {
+        return UserLoginRes.builder()
+                .loginUser(loginUser)
+                .tokenDTO(token)
+                .build();
     }
 }
