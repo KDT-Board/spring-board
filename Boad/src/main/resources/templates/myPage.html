@@ -3,6 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>MyPage</title>
+    <script>
+        // 페이지 로드 시 accessToken 확인
+        document.addEventListener('DOMContentLoaded', () => {
+            const accessToken = sessionStorage.getItem('accessToken');
+            if (!accessToken) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/view/user/main'; // 메인 페이지로 리다이렉트
+            }
+        });
+    </script>
 </head>
 <body>
 <header>

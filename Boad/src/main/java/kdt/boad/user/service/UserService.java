@@ -1,6 +1,7 @@
 package kdt.boad.user.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import kdt.boad.auth.dto.KakaoProfile;
 import kdt.boad.jwt.JwtService;
 import kdt.boad.user.domain.User;
 import kdt.boad.user.dto.*;
@@ -10,6 +11,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +47,7 @@ public class UserService {
         if (token == null)
             return null;
 
-        return new UserLoginRes(loginUser, token);
+        return UserLoginRes.from(loginUser, token);
     }
 
     public boolean logoutUser(User logoutUser, HttpServletRequest request) {
@@ -72,5 +75,21 @@ public class UserService {
         userRepository.delete(user);
 
         return user.getId() + "님의 회원 정보를 삭제했습니다.\n";
+    }
+
+    @Transactional
+    public User createKakaoUser(KakaoProfile userInfo) {
+        String nickname = userInfo.getNickname();
+        String uuid = UUID.randomUUID().toString();
+
+        // 유저 닉네임 중복 방지
+        while (userRepository.existsByNickname(nickname + uuid)) {
+            uuid = UUID.randomUUID().toString();
+        }
+
+        User kakaoUser = User.of(userInfo.getId(), null, userInfo.getNickname() + uuid);
+        userRepository.save(kakaoUser);
+
+        return kakaoUser;
     }
 }

@@ -3,6 +3,16 @@
 <head>
     <title>회원가입</title>
     <link rel="stylesheet" href="/css/style.css">
+    <script>
+        // 페이지 로드 시 accessToken 확인
+        document.addEventListener('DOMContentLoaded', () => {
+            const accessToken = sessionStorage.getItem('accessToken');
+            if (accessToken) {
+                alert('이미 로그인된 상태입니다.');
+                window.location.href = '/view/user/main'; // 메인 페이지로 리다이렉트
+            }
+        });
+    </script>
 </head>
 <body>
 <header>
