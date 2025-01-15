@@ -23,10 +23,18 @@ public class User {
     private Grade grade;
 
     @Builder
-    public User(String id, String password, String nickname) {
+    private User(String id, String password, String nickname) {
         this.id = id;
         this.password = password;
         this.nickname = nickname;
         this.grade = Grade.BRONZE;
+    }
+
+    public static User of(String id, String password, String nickname) {
+        return User.builder()
+                .id(id)
+                .password(password)
+                .nickname(nickname)
+                .build();
     }
 }

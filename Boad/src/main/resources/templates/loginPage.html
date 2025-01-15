@@ -3,12 +3,26 @@
 <head>
   <title>로그인</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script>
+    // 페이지 로드 시 accessToken 확인
+    document.addEventListener('DOMContentLoaded', () => {
+      const accessToken = sessionStorage.getItem('accessToken');
+      if (accessToken) {
+        alert('이미 로그인된 상태입니다.');
+        window.location.href = '/view/user/main'; // 메인 페이지로 리다이렉트
+      }
+    });
+  </script>
 </head>
 <body>
 <header>
-  <nav>
-    <a href="/view/user/join" th:href="@{/view/user/join}">회원가입</a>
-    <a href="/view/user/login" th:href="@{/view/user/login}">로그인</a>
+  <nav style="background-color: green; padding: 10px;">
+    <a href="/" th:href="@{/}" style="margin-right: 10px; color: black; text-decoration: none;">Home</a>
+    <a href="/view/user/join" th:href="@{/view/user/join}" style="margin-right: 10px; color: black; text-decoration: none;">가입인사</a>
+    <a href="/view/board/free" th:href="@{/view/board/free}" style="margin-right: 10px; color: black; text-decoration: none;">자유게시판</a>
+    <a href="/view/board/gold" th:href="@{/view/board/gold}" style="margin-right: 10px; color: black; text-decoration: none;">골드게시판</a>
+    <a href="/view/user/join" th:href="@{/view/user/join}" style="margin-right: 10px; color: black; text-decoration: none;">회원가입</a>
+    <a href="/view/user/login" th:href="@{/view/user/login}" style="margin-right: 10px; color: black; text-decoration: none;">로그인</a>
   </nav>
 </header>
 <main>
@@ -22,7 +36,11 @@
 
     <button type="submit">로그인</button>
   </form>
-
+  <div class="btn-group" style="margin-top: 20px;">
+    <a class="btn-kakao-login" th:href="@{/view/auth/kakao}">
+      <img src="/kakao_login_medium_narrow.png">
+    </a>
+  </div>
   <script>
     function submitLogin(event) {
       // 폼 기본 제출 동작 방지
